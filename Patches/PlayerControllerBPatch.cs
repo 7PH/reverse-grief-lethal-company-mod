@@ -11,6 +11,12 @@ namespace LCModReverseGrief.Patches
         [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayerFromOtherClientClientRpc")]
         public static bool PlayerDamaged(ref int damageAmount, ref Vector3 hitDirection, ref int playerWhoHit, PlayerControllerB __instance)
         {
+            // If the grief is not on us but on another player, ignore it
+            if (! __instance.IsOwner)
+            {
+                return true;
+            }
+
             // If the other player is hitting is to save us from a clinged MOB, accept the damages
             CentipedeAI[] array = Object.FindObjectsByType<CentipedeAI>(0);
             for (int i = 0; i < array.Length; i++)
@@ -33,15 +39,13 @@ namespace LCModReverseGrief.Patches
             {
                 ModeBase.Instance.mls.LogInfo("REVERSE_GRIEF: Identified griefing player (" + playerWhoHit + "). Hitting back other player instantly.");
                 griefingPlayer.DamagePlayerFromOtherClientServerRpc(damageAmount, -hitDirection, (int)__instance.playerClientId);
-            } else {
+            }
+            else
+            {
                 ModeBase.Instance.mls.LogInfo("REVERSE_GRIEF: Unable to identify griefing player. Skipping revenge.");
             }
 
-            // For our own client, set the damage to 0
-            damageAmount = 0;
-
-            // Still run the original function to maximize compatibility with other mods or future version upgrades
-            return true;
+            return false;
         }
 
         private static PlayerControllerB FindPlayerById(int playerId)
@@ -49,7 +53,7 @@ namespace LCModReverseGrief.Patches
             PlayerControllerB[] players = Object.FindObjectsOfType<PlayerControllerB>();
             foreach (var player in players)
             {
-                if ((int) player.playerClientId == playerId)
+                if ((int)player.playerClientId == playerId)
                 {
                     return player;
                 }

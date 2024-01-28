@@ -15,7 +15,7 @@ namespace LCModReverseGrief
     {
         private const string modGUID = "7ph.dev.lcmodreversegrief";
         private const string modName = "LC Mod - Reverse Grief";
-        private const string modVersion = "1.0.0";
+        private const string modVersion = "1.0.1";
 
         private readonly Harmony harmony = new Harmony(modGUID);
 
