@@ -1,0 +1,7 @@
+{
+  "name": "Reverse_Grief",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/7PH/reverse-grief-lethal-company-mod",
+  "description": "Prevent griefing and send the damage back to the player who hit you",
+  "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
+}
