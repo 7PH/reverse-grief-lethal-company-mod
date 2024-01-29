@@ -9,10 +9,10 @@ namespace LCModReverseGrief.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PlayerControllerB), "DamagePlayerFromOtherClientClientRpc")]
-        public static bool PlayerDamaged(ref int damageAmount, ref Vector3 hitDirection, ref int playerWhoHit, PlayerControllerB __instance)
+        public static bool PlayerDamaged(ref int damageAmount, ref Vector3 hitDirection, ref int playerWhoHit, ref int newHealthAmount, PlayerControllerB __instance)
         {
             // If the grief is not on us but on another player, ignore it
-            if (! __instance.IsOwner)
+            if (!__instance.IsOwner)
             {
                 return true;
             }
@@ -23,29 +23,33 @@ namespace LCModReverseGrief.Patches
             {
                 if (array[i].clingingToPlayer == __instance)
                 {
-                    ModeBase.Instance.mls.LogInfo("REVERSE_GRIEF: Accepting the hit from player (" + playerWhoHit + ")");
+                    ModeBase.Instance.mls.LogInfo($"REVERSE_GRIEF: Accepting the hit from player{playerWhoHit}");
                     return true;
                 }
             }
 
             // At this point, we assume it's grief
-            ModeBase.Instance.mls.LogInfo("REVERSE_GRIEF: Detected grief from another player (" + playerWhoHit + ")");
+            ModeBase.Instance.mls.LogInfo($"REVERSE_GRIEF: Detected grief from another player{playerWhoHit}");
 
             // Find the player who caused the damage
             PlayerControllerB griefingPlayer = FindPlayerById(playerWhoHit);
 
             // Hit the other player back instantly
-            if (griefingPlayer != null)
+            if (griefingPlayer != null && griefingPlayer != __instance)
             {
-                ModeBase.Instance.mls.LogInfo("REVERSE_GRIEF: Identified griefing player (" + playerWhoHit + "). Hitting back other player instantly.");
-                griefingPlayer.DamagePlayerFromOtherClientServerRpc(damageAmount, -hitDirection, (int)__instance.playerClientId);
+                ModeBase.Instance.mls.LogInfo($"REVERSE_GRIEF: Identified griefing player{playerWhoHit}. Hitting back other player instantly.");
+                griefingPlayer.DamagePlayerFromOtherClientServerRpc(damageAmount, -hitDirection, playerWhoHit);
             }
             else
             {
                 ModeBase.Instance.mls.LogInfo("REVERSE_GRIEF: Unable to identify griefing player. Skipping revenge.");
             }
 
-            return false;
+            // Cancel the damage and health update
+            damageAmount = 0;
+            newHealthAmount = __instance.health;
+
+            return true;
         }
 
         private static PlayerControllerB FindPlayerById(int playerId)

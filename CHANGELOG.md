@@ -1,3 +1,7 @@
+# v1.0.2
+
+- Fix server crash when two players have the mod installed
+
 # v1.0.1
 
 - Fix infinite grief revenge loop
